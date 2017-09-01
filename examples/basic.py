@@ -21,7 +21,9 @@ async def main():
     # You will need to create the database and table manually
 
     print(await User.create(bind=conn, nickname='fantix'))
-    print(await User.get(1, bind=conn))
+    user = await User.get(1, bind=conn)
+    print(user)
+    print(dict(user))
 
 
 if __name__ == '__main__':

@@ -126,6 +126,16 @@ class CRUDModel(Model):
         # noinspection PyCallingNonCallable
         self.update(**values)
 
+    def __iter__(self):
+        cls = self.__class__
+        keys = set(c.name for c in cls)
+        for key, prop in cls.__dict__.items():
+            if isinstance(prop, json_support.JSONProperty):
+                keys.add(key)
+                keys.discard(prop.column_name)
+        for k in keys:
+            yield k, getattr(self, k)
+
     @classmethod
     def _init_table(cls, sub_cls):
         rv = Model._init_table(sub_cls)
@@ -214,11 +224,3 @@ class CRUDModel(Model):
             clause = clause.execution_options(timeout=timeout)
         return await self.__metadata__.status(clause, bind=bind)
 
-    def to_dict(self):
-        cls = type(self)
-        keys = set(c.name for c in cls)
-        for key, prop in cls.__dict__.items():
-            if isinstance(prop, json_support.JSONProperty):
-                keys.add(key)
-                keys.discard(prop.column_name)
-        return dict((k, getattr(self, k)) for k in keys)
